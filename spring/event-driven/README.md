@@ -180,7 +180,7 @@ ThreadPoolTaskExecutor 객체는 스프링에서 제공하는 클래스로, 스�
 
 로그를 확인하면 주문을 처리하는 로직은 톰캣이 생성한 스레드에서 처리되고, 알림메일, 알림톡 로직은 비동기로 JVM 내에서 관리되는 스레드가 처리한 것을 확인할 수 있다.  
 
-![로그](/images/event-driven-log.png)
+![로그](./images/event-driven-log.png)
 
 <br/>
 
