@@ -1,0 +1,12 @@
+server:
+  port: 9090
+
+spring:
+  output:
+    ansi:
+      enabled: always
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
