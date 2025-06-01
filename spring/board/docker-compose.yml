@@ -1,0 +1,18 @@
+services:
+  mysql:
+    platform: linux/amd64
+    image: mysql:8.0.39
+    container_name: board-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root1234
+      MYSQL_DATABASE: board
+      MYSQL_USER: board
+      MYSQL_PASSWORD: board1234
+    ports:
+      - "3306:3306"
+    networks:
+      - board_network
+
+networks:
+  board_network:
+    driver: bridge
