@@ -3,16 +3,29 @@ server:
     whitelabel:
       enabled: false
 
+  # 톰캣 정보. 이 프로퍼티를 켜지 않으면 tomcat.session. 관련 정보만 노출
+  tomcat: # 톰캣의 최대 쓰레드, 사용 쓰레드 수를 포함한 다양한 메트릭을 확인
+    mbeanregistry:
+      enabled: true
+
+    threads:
+      max: 200 # 생성할 수 있는 thread의 총 개수
+      min-spare: 10 # 항상 활성화 되어있는(idle) thread의 개수
+    accept-count: 100 # 작업큐의 사이즈
+    connection-timeout: 30000
+
 spring:
+  profiles:
+    active: local
+
   output:
     ansi:
       enabled: always
 
   datasource:
-    url: jdbc:mysql://localhost:3306/board
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: board
-    password: board1234
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 10
 
   jpa:
     hibernate:
@@ -20,3 +33,44 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+# actuator 기능
+management:
+  endpoints:
+    web: # 액츄에이터 기능을 웹에 노출
+      exposure:
+        include: "*"
+
+  info: # OS, env, java runtime 활성화
+    java:
+      enabled: true
+    os:
+      enabled: true
+    env:
+      enabled: true
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/board
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: board
+    password: board1234
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  datasource:
+    url: jdbc:mysql://board-mysql:3306/board
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: board
+    password: board1234

@@ -28,6 +28,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
+	implementation 'org.springframework.boot:spring-boot-starter-actuator' //actuator 추가
+	// 이 라이브러리를 사용하면 actuator 프로페메우스 메트릭 수집 엔드포인트가 자동으로 추가됨
+	implementation "io.micrometer:micrometer-registry-prometheus" // 프로메테우스 저장소
+
 	// DB
 	runtimeOnly 'com.mysql:mysql-connector-j'
 
@@ -47,4 +51,8 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+jar {
+	enabled = false;
 }
