@@ -51,3 +51,56 @@ Spring Data Redis를 사용하면 RedisTemplate의 ops...() 메서드를 사용�
 - `opsForZSet()`: Redis의 Sorted Set 타입에 대한 연산을 처리한다.
 
 <br/>
+
+### RedisTemplate의 execuete(), executePipelined() 메서드
+
+`execute()` 메서드는 Redis 서버에 하나의 명령어를 실행할 때 사용한다. 이 메서드는 명령을 순차적으로 Redis 서버로 전송하고 서버의 응답을 받아 결과를 즉시 반환한다.  
+이 메서드는 네트워크 통신이 각 명령에 대해서 발생히므로, 여러 명령을 연속적으로 실행할 때 성능이 저하될 수 있다.  
+단일 Redis 명령을 순차적으로 실행하고, 하나의 명령을 실행하고 그 결과를 즉시 처리하기 때문에 트랜젹션 환경에 적합하다.
+
+```java
+public class RedisService {
+    private final StringRedisTemplate stringRedisTemplate;
+
+    public void addValue(String key, String value) {
+        stringRedisTemplate.execute((RedisCallback<?>) redisConnection -> {
+            StringRedisConnection connection = (StringRedisConnection) redisConnection;
+            connection.set(key, value);
+
+            return null;
+        });
+    }
+}
+```
+
+<br/>
+
+`executePipelined()` 메서드는 여러 Redis 명령을 한 번에 실행할 수 있게 해준다. 여러 명령어를 묶어서(파이프라이닝) 전송하고, 그에 대한 응답을 한 번에 처리하는 방식이다. 이 메서드는 너트워크 지연을 줄여 성능을 최적화할 수 있다.  
+이 메서드는 여러 명령을 한 번에 보내고 응답을 한 번에 받기 때문에, 네트워크 지연을 줄이고 성능을 개선시킬 수 있다. 즉, 많은 양의 데이터를 처리할 때 유용하다.  
+
+```java
+public class RedisService {
+    private final StringRedisTemplate stringRedisTemplate;
+
+    public void addValue(String key, String value, Long score, Duration ttl) {
+        stringRedisTemplate.executePipelined((RedisCallback<?>) redisConnection -> {
+            StringRedisConnection connection = (StringRedisConnection) redisConnection;
+            connection.zAdd(key, score, value);
+            connection.expire(key, ttl.toSeconds());
+
+            return null;
+        });
+    }
+}
+```
+
+<br/>
+
+### RedisTemplate의 Sorted Set의 Range 시용 
+
+Spring Data Redis가 제공하는 RedisTemplate의 `opsForSet()` 메서드를 통해 Sorted Set 자료구조를 사용할 수 있는데, 기본적으로 key에 대한 value값은 score 순으로 오름차순 정렬된다.  
+
+`range(K key, long start, long end)` 메서드를 사용하면 오름차순 정렬된 데이터를 범위를 지정해서 조회할 수 있고, `reverseRangeWithScores(K key, long start, long end)` 메서드를 사용하면 내림차순 정렬된 데이터를 범위를 지정해서 조회할 수 있다.  
+범위를 조회할 때 기본적으로 zero based index를 사용하며, end 인자에 -1은 가장 마지막 원소를 의미한다. 그래서 `range(key, 0, -1)`처럼 사용 시 전체 원소를 조회한다.
+
+<br/>
